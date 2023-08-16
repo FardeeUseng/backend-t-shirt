@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/FardeeUseng/t-shirt-backend/configs"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 )
 
@@ -15,19 +14,19 @@ func main() {
 		panic(err)
 	}
 
-	// get database connection
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbSslMode := os.Getenv("DB_SSL_MODE")
+	cfg := new(configs.Configs)
 
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", dbHost, dbPort, dbUser, dbPassword, dbName, dbSslMode)
+	// fiber configs
+	cfg.App.Host = os.Getenv("FIBER_HOST")
+	cfg.App.Port = os.Getenv("FIBER_POST")
 
-	db, err := sqlx.Open("pgx", connectionString)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
+	// database configs
+	cfg.PostgreSQL.Host = os.Getenv("DB_HOST")
+	cfg.PostgreSQL.Port = os.Getenv("DB_POST")
+	cfg.PostgreSQL.Protocal = os.Getenv("DB_PROTOCAL")
+	cfg.PostgreSQL.Username = os.Getenv("DB_USERNAME")
+	cfg.PostgreSQL.Password = os.Getenv("DB_PASSWORD")
+	cfg.PostgreSQL.Database = os.Getenv("DB_DATABASE")
+	cfg.PostgreSQL.SSLMode = os.Getenv("DB_SSL_MODE")
+
 }
