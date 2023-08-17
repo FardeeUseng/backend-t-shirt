@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
 
 	"github.com/FardeeUseng/t-shirt-backend/configs"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/FardeeUseng/t-shirt-backend/pkg/databases"
 	"github.com/joho/godotenv"
 )
 
@@ -29,4 +31,15 @@ func main() {
 	cfg.PostgreSQL.Database = os.Getenv("DB_DATABASE")
 	cfg.PostgreSQL.SSLMode = os.Getenv("DB_SSL_MODE")
 
+	fmt.Println("cfg", cfg)
+
+	// New Database
+	db, err := databases.NewPostgresSQLDBConnection(cfg)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	defer db.Close()
+
+	// s := servers.NewServer(cfg, db)
+	// s.Start()
 }

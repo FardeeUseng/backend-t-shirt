@@ -1,7 +1,6 @@
 package utils
 
 import (
-	// "backend-t-shirt/configs"
 	"errors"
 	"fmt"
 
@@ -17,12 +16,12 @@ func ConnectionUrlBuilder(stuff string, cfg *configs.Configs) (string, error) {
 	case "postgressql":
 		url = fmt.Sprintf(
 			"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-			cfg.PostgresSQL.Host,
-			cfg.PostgresSQL.Port,
-			cfg.PostgresSQL.Username,
-			cfg.PostgresSQL.Password,
-			cfg.PostgresSQL.Database,
-			cfg.PostgresSQL.SSLMode,
+			cfg.PostgreSQL.Host,
+			cfg.PostgreSQL.Port,
+			cfg.PostgreSQL.Username,
+			cfg.PostgreSQL.Password,
+			cfg.PostgreSQL.Database,
+			cfg.PostgreSQL.SSLMode,
 		)
 	default:
 		errMsg := fmt.Sprintf("error, connection url builder doesn't know the %s", stuff)
