@@ -1,7 +1,9 @@
 package repositories
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/FardeeUseng/backend-t-shirt/modules/entities"
 	"github.com/gofiber/fiber/v2"
@@ -47,5 +49,107 @@ func (r *usersRepo) CreateUser(req *entities.CreateUserReq) (*entities.Users, er
 }
 
 func (r *usersRepo) UserList(c *fiber.Ctx) (*entities.UserListRes, error) {
-	return nil, nil
+	page := 1
+	itemPerPage := 4
+	gender := c.Query("gender")
+	role := c.Query("role")
+	searhName := c.Query("search")
+
+	if c.Query("page") != "" {
+		qPage, err := strconv.Atoi(c.Query("page"))
+		if err == nil {
+			page = qPage
+		}
+	}
+	if c.Query("item_per_page") != "" {
+		qItemPerPage, err := strconv.Atoi(c.Query("item_per_page"))
+		if err == nil {
+			itemPerPage = qItemPerPage
+		}
+	} else {
+		page = 1
+		itemPerPage = 100
+	}
+
+	offset := (page - 1) * itemPerPage
+
+	query := `
+		WITH users_total AS (
+			SELECT
+				COUNT(*) AS total
+			FROM users u
+			WHERE
+				($3 = '' OR u.gender = CAST($3 AS gender))
+				AND
+				($4 = '' OR u.role = $4)
+				AND
+				($5 = '' OR u.username LIKE '%' || $5 || '%')
+		), users_item AS (
+			SELECT
+				*
+			FROM users u
+			WHERE
+				($3 = '' OR u.gender = CAST($3 AS gender))
+				AND
+				($4 = '' OR u.role = $4)
+				AND
+				($5 = '' OR u.username LIKE '%' || $5 || '%')
+			ORDER BY u.id
+			OFFSET $1 LIMIT $2
+		)
+		SELECT 
+			(
+				SELECT
+					JSONB_AGG(x)
+				FROM (
+					SELECT
+						id, username, gender, role, created_at
+					FROM users_item
+				) AS x
+			) AS item,
+			(
+				SELECT total FROM users_total
+			) AS total
+	`
+
+	var usersJSON []byte
+	total := 0
+
+	rows, err := r.Db.Queryx(query, offset, itemPerPage, gender, role, searhName)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	for rows.Next() {
+		var userJSON []byte
+		if err := rows.Scan(&userJSON, &total); err != nil {
+			fmt.Println(err.Error())
+			return nil, err
+		}
+		usersJSON = userJSON
+	}
+
+	var users []entities.Users
+
+	if len(usersJSON) == 0 {
+		return &entities.UserListRes{
+			Page:        page,
+			ItemPerPage: itemPerPage,
+			Total:       total,
+			Item:        users,
+		}, nil
+	}
+
+	if err := json.Unmarshal(usersJSON, &users); err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return &entities.UserListRes{
+		Page:        page,
+		ItemPerPage: itemPerPage,
+		Total:       total,
+		Item:        users,
+	}, nil
 }

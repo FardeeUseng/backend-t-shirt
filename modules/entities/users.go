@@ -12,7 +12,7 @@ type UsersRepository interface {
 	UserList(c *fiber.Ctx) (*UserListRes, error)
 }
 
-type Reponse struct {
+type Response struct {
 	Status     string      `json:"status"`
 	StatusCode int         `json:"status_code"`
 	Message    string      `json:"message"`

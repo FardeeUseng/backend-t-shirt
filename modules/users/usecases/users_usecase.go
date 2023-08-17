@@ -24,5 +24,9 @@ func (u *usersUse) CreateUser(req *entities.CreateUserReq) (*entities.Users, err
 }
 
 func (u *usersUse) UserList(c *fiber.Ctx) (*entities.UserListRes, error) {
-	return nil, nil
+	users, err := u.UsersRepo.UserList(c)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

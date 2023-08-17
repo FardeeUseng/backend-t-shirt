@@ -20,7 +20,7 @@ func NewUsersController(r fiber.Router, usersUse entities.UsersUsecase) {
 func (h *usersController) CreateUser(c *fiber.Ctx) error {
 	req := new(entities.CreateUserReq)
 	if err := c.BodyParser(req); err != nil {
-		return c.Status(fiber.ErrBadRequest.Code).JSON(&entities.Reponse{
+		return c.Status(fiber.ErrBadRequest.Code).JSON(&entities.Response{
 			Status:     fiber.ErrBadRequest.Message,
 			StatusCode: fiber.ErrBadRequest.Code,
 			Message:    err.Error(),
@@ -30,7 +30,7 @@ func (h *usersController) CreateUser(c *fiber.Ctx) error {
 
 	res, err := h.UserUse.CreateUser(req)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(&entities.Reponse{
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(&entities.Response{
 			Status:     fiber.ErrInternalServerError.Message,
 			StatusCode: fiber.ErrInternalServerError.Code,
 			Message:    err.Error(),
@@ -38,7 +38,7 @@ func (h *usersController) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(&entities.Reponse{
+	return c.Status(fiber.StatusOK).JSON(&entities.Response{
 		Status:     "OK",
 		StatusCode: fiber.StatusOK,
 		Message:    "",
@@ -49,5 +49,23 @@ func (h *usersController) CreateUser(c *fiber.Ctx) error {
 }
 
 func (h *usersController) UserList(c *fiber.Ctx) error {
-	return nil
+
+	res, err := h.UserUse.UserList(c)
+	if err != nil {
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(&entities.Response{
+			Status:     fiber.ErrInternalServerError.Message,
+			StatusCode: fiber.ErrInternalServerError.Code,
+			Message:    err.Error(),
+			Result:     nil,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&entities.Response{
+		Status:     "OK",
+		StatusCode: fiber.StatusOK,
+		Message:    "",
+		Result: fiber.Map{
+			"data": res,
+		},
+	})
 }
