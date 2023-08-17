@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Load the .env file
-	if err := godotenv.Load(".env"); err != nil {
+	if err := godotenv.Load("../.env"); err != nil {
 		panic(err)
 	}
 
@@ -25,7 +25,7 @@ func main() {
 
 	// database configs
 	cfg.PostgreSQL.Host = os.Getenv("DB_HOST")
-	cfg.PostgreSQL.Port = os.Getenv("DB_POST")
+	cfg.PostgreSQL.Port = os.Getenv("DB_PORT")
 	cfg.PostgreSQL.Protocal = os.Getenv("DB_PROTOCAL")
 	cfg.PostgreSQL.Username = os.Getenv("DB_USERNAME")
 	cfg.PostgreSQL.Password = os.Getenv("DB_PASSWORD")
