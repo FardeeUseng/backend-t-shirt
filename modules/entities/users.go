@@ -3,10 +3,12 @@ package entities
 import "github.com/gofiber/fiber/v2"
 
 type UsersUsecase interface {
+	CreateUser(req *CreateUserReq) (*Users, error)
 	UserList(c *fiber.Ctx) (*UserListRes, error)
 }
 
 type UsersRepository interface {
+	CreateUser(req *CreateUserReq) (*Users, error)
 	UserList(c *fiber.Ctx) (*UserListRes, error)
 }
 
@@ -22,7 +24,13 @@ type Users struct {
 	Username  string `json:"username" db:"username"`
 	Gender    string `json:"gender" db:"gender"`
 	Role      string `json:"role" db:"role"`
-	CreatedAt string `json:"create_at" db:"create_at"`
+	CreatedAt string `json:"created_at" db:"created_at"`
+}
+
+type CreateUserReq struct {
+	Username string `json:"username" db:"username"`
+	Gender   string `json:"gender" db:"gender"`
+	Role     string `json:"role" db:"role"`
 }
 
 type UserListRes struct {

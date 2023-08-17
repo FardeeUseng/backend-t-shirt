@@ -15,6 +15,14 @@ func NewUserUsecase(usersRepo entities.UsersRepository) entities.UsersUsecase {
 	}
 }
 
+func (u *usersUse) CreateUser(req *entities.CreateUserReq) (*entities.Users, error) {
+	user, err := u.UsersRepo.CreateUser(req)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (u *usersUse) UserList(c *fiber.Ctx) (*entities.UserListRes, error) {
 	return nil, nil
 }
