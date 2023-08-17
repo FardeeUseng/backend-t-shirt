@@ -41,9 +41,9 @@ func (h *usersController) CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(&entities.Response{
+	return c.Status(fiber.StatusCreated).JSON(&entities.Response{
 		Status:     "OK",
-		StatusCode: fiber.StatusOK,
+		StatusCode: fiber.StatusCreated,
 		Message:    "",
 		Result: fiber.Map{
 			"data": res,
