@@ -30,3 +30,11 @@ func (u *usersUse) UserList(c *fiber.Ctx) (*entities.UserListRes, error) {
 	}
 	return users, nil
 }
+
+func (u *usersUse) UserInfo(id int) (*entities.Users, error) {
+	user, err := u.UsersRepo.UserInfo(id)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}

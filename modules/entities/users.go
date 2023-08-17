@@ -5,11 +5,13 @@ import "github.com/gofiber/fiber/v2"
 type UsersUsecase interface {
 	CreateUser(req *CreateUserReq) (*Users, error)
 	UserList(c *fiber.Ctx) (*UserListRes, error)
+	UserInfo(id int) (*Users, error)
 }
 
 type UsersRepository interface {
 	CreateUser(req *CreateUserReq) (*Users, error)
 	UserList(c *fiber.Ctx) (*UserListRes, error)
+	UserInfo(id int) (*Users, error)
 }
 
 type Response struct {

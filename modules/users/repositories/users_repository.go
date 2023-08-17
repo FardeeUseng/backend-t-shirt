@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -152,4 +153,25 @@ func (r *usersRepo) UserList(c *fiber.Ctx) (*entities.UserListRes, error) {
 		Total:       total,
 		Item:        users,
 	}, nil
+}
+
+func (r *usersRepo) UserInfo(id int) (*entities.Users, error) {
+
+	query := `
+		SELECT
+			"id", "username", "gender", "role", "created_at"
+		FROM "users"
+		WHERE "id" = $1
+	`
+	user := new(entities.Users)
+
+	err := r.Db.QueryRow(query, id).Scan(&user.Id, &user.Username, &user.Gender, &user.Role, &user.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	return user, nil
 }
