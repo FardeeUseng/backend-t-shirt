@@ -5,14 +5,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/FardeeUseng/t-shirt-backend/configs"
-	"github.com/FardeeUseng/t-shirt-backend/pkg/databases"
+	"github.com/FardeeUseng/backend-t-shirt/configs"
+	"github.com/FardeeUseng/backend-t-shirt/modules/servers"
+	"github.com/FardeeUseng/backend-t-shirt/pkg/databases"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	// Load the .env file
-	if err := godotenv.Load("../.env"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
 
@@ -20,7 +21,7 @@ func main() {
 
 	// fiber configs
 	cfg.App.Host = os.Getenv("FIBER_HOST")
-	cfg.App.Port = os.Getenv("FIBER_POST")
+	cfg.App.Port = os.Getenv("FIBER_PORT")
 
 	// database configs
 	cfg.PostgreSQL.Host = os.Getenv("DB_HOST")
@@ -40,6 +41,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// s := servers.NewServer(cfg, db)
-	// s.Start()
+	s := servers.NewServer(cfg, db)
+	s.Start()
 }

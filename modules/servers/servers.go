@@ -3,8 +3,8 @@ package servers
 import (
 	"log"
 
-	"github.com/FardeeUseng/t-shirt-backend/configs"
-	"github.com/FardeeUseng/t-shirt-backend/pkg/utils"
+	"github.com/FardeeUseng/backend-t-shirt/configs"
+	"github.com/FardeeUseng/backend-t-shirt/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 )
@@ -24,10 +24,10 @@ func NewServer(cfg *configs.Configs, db *sqlx.DB) *Server {
 }
 
 func (s *Server) Start() {
-	// if err := s.MapHandlers(); err != nil {
-	// 	log.Fatalln(err.Error())
-	// 	panic(err.Error())
-	// }
+	if err := s.MapHandler(); err != nil {
+		log.Fatalln(err.Error())
+		panic(err.Error())
+	}
 
 	fiberConnURL, err := utils.ConnectionUrlBuilder("fiber", s.cfg)
 	if err != nil {

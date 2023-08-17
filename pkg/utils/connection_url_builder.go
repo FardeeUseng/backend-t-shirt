@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/FardeeUseng/t-shirt-backend/configs"
+	"github.com/FardeeUseng/backend-t-shirt/configs"
 )
 
 func ConnectionUrlBuilder(stuff string, cfg *configs.Configs) (string, error) {
@@ -13,7 +13,7 @@ func ConnectionUrlBuilder(stuff string, cfg *configs.Configs) (string, error) {
 	switch stuff {
 	case "fiber":
 		url = fmt.Sprintf("%s:%s", cfg.App.Host, cfg.App.Port)
-	case "postgressql":
+	case "postgresql":
 		url = fmt.Sprintf(
 			"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 			cfg.PostgreSQL.Host,

@@ -1,4 +1,4 @@
-module github.com/FardeeUseng/t-shirt-backend
+module github.com/FardeeUseng/backend-t-shirt
 
 go 1.20
 

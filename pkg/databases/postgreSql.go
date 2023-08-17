@@ -1,19 +1,20 @@
 package databases
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/FardeeUseng/t-shirt-backend/configs"
-	"github.com/FardeeUseng/t-shirt-backend/pkg/utils"
+	"github.com/FardeeUseng/backend-t-shirt/configs"
+	"github.com/FardeeUseng/backend-t-shirt/pkg/utils"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
 func NewPostgresSQLDBConnection(cfg *configs.Configs) (*sqlx.DB, error) {
-	postgresUrl, err := utils.ConnectionUrlBuilder("postgressql", cfg)
+	fmt.Println("cfg", cfg)
+	postgresUrl, err := utils.ConnectionUrlBuilder("postgresql", cfg)
 
 	if err != nil {
-
 		return nil, err
 	}
 
