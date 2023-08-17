@@ -1,7 +1,6 @@
 package databases
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/FardeeUseng/backend-t-shirt/configs"
@@ -11,7 +10,6 @@ import (
 )
 
 func NewPostgresSQLDBConnection(cfg *configs.Configs) (*sqlx.DB, error) {
-	fmt.Println("cfg", cfg)
 	postgresUrl, err := utils.ConnectionUrlBuilder("postgresql", cfg)
 
 	if err != nil {
