@@ -14,6 +14,7 @@ func NewProductsController(r fiber.Router, productsUse entities.ProductsUsecase)
 		ProductUse: productsUse,
 	}
 	r.Post("/", controller.CreateProduct)
+	r.Get("/", controller.ProductList)
 }
 
 func (h *productsController) CreateProduct(c *fiber.Ctx) error {
@@ -40,6 +41,28 @@ func (h *productsController) CreateProduct(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(&entities.Response{
 		Status:     "OK",
 		StatusCode: fiber.StatusCreated,
+		Message:    "",
+		Result: fiber.Map{
+			"data": res,
+		},
+	})
+}
+
+func (h *productsController) ProductList(c *fiber.Ctx) error {
+
+	res, err := h.ProductUse.ProductList(c)
+	if err != nil {
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(&entities.Response{
+			Status:     fiber.ErrInternalServerError.Message,
+			StatusCode: fiber.ErrInternalServerError.Code,
+			Message:    err.Error(),
+			Result:     nil,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&entities.Response{
+		Status:     "OK",
+		StatusCode: fiber.StatusOK,
 		Message:    "",
 		Result: fiber.Map{
 			"data": res,
