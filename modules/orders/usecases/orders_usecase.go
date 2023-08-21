@@ -19,3 +19,11 @@ func (u *ordersUse) CreateOrder(req *entities.CreateOrderReq) (*entities.CreateO
 	}
 	return res, nil
 }
+
+func (u *ordersUse) CreateShipping(req *entities.ShippingReq) (*entities.ShippingRes, error) {
+	res, err := u.OrdersRepo.CreateShipping(req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}

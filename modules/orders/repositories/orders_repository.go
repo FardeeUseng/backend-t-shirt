@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"fmt"
+
 	"github.com/FardeeUseng/backend-t-shirt/modules/entities"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/jmoiron/sqlx"
@@ -134,5 +136,85 @@ func (h *ordersRepo) CreateOrder(req *entities.CreateOrderReq) (*entities.Create
 		OrderId: order.Id,
 		Status:  order.Status,
 		Product: products,
+	}, nil
+}
+
+func (h *ordersRepo) CreateShipping(req *entities.ShippingReq) (*entities.ShippingRes, error) {
+
+	tx, err := h.Db.Begin()
+	if err != nil {
+		log.Errorf("%v", err.Error())
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	orderQuery := `
+		SELECT "id", "user_id", "status"
+		FROM "orders" o
+		WHERE o.id = $1
+	`
+
+	uRows, uErr := h.Db.Query(orderQuery, req.OrderId)
+	if uErr != nil {
+		tx.Rollback()
+		log.Errorf("%v", uErr.Error())
+		return nil, uErr
+	}
+	defer uRows.Close()
+
+	var orders []entities.Order
+	for uRows.Next() {
+		var order entities.Order
+		if err := uRows.Scan(&order.Id, &order.UserId, &order.Status); err != nil {
+			tx.Rollback()
+			log.Errorf("%v", err)
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+
+	if len(orders) == 0 {
+		tx.Rollback()
+		return nil, fmt.Errorf("error, Can not find order id")
+	}
+
+	shippingQuery := `
+		INSERT INTO "shippings"(
+			"order_id",
+			"address",
+			"subdistrict",
+			"district",
+			"province",
+			"zip_code"
+		)
+		VALUES($1, $2, $3, $4, $5, $6)
+		RETURNING "id", "order_id", "address", "subdistrict", "district", "province", "zip_code", "created_at","updated_datetime"
+	`
+
+	var shipping entities.ShippingRes
+	sRow := tx.QueryRow(shippingQuery, req.OrderId, req.Address, req.Subdistrict, req.District, req.Province, req.ZipCode)
+	if sErr := sRow.Scan(&shipping.Id, &shipping.OrderId, &shipping.Address, &shipping.Subdistrict, &shipping.District, &shipping.Province, &shipping.ZipCode, &shipping.CreatedAt, &shipping.UpdatedDatetime); sErr != nil {
+		tx.Rollback()
+		log.Errorf("%v", sErr)
+		return nil, sErr
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		log.Errorf("%v", err.Error())
+		return nil, err
+	}
+
+	return &entities.ShippingRes{
+		Id:              shipping.Id,
+		OrderId:         shipping.OrderId,
+		Address:         shipping.Address,
+		Subdistrict:     shipping.Subdistrict,
+		District:        shipping.District,
+		Province:        shipping.Province,
+		ZipCode:         shipping.ZipCode,
+		CreatedAt:       shipping.CreatedAt,
+		UpdatedDatetime: shipping.UpdatedDatetime,
 	}, nil
 }
