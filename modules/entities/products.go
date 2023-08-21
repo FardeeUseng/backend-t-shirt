@@ -19,6 +19,7 @@ type Product struct {
 	Size       string `json:"size" db:"size"`
 	Price      int    `json:"price" db:"price"`
 	Created_at string `json:"created_at" db:"created_at"`
+	Updated_at string `json:"updated_datetime" db:"updated_datetime"`
 }
 
 type CreateProductReq struct {

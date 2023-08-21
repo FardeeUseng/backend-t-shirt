@@ -83,7 +83,7 @@ func (r *productsRepo) ProductList(c *fiber.Ctx) (*entities.ProductListRes, erro
 			WHERE
 				($3 = '' OR p.gender = CAST($3 AS gender))
 					AND
-				($4 = '' OR p.size = CAST($4) AS size)
+				($4 = '' OR p.size = CAST($4 AS size))
 					AND
 				($5 = '' OR p.price = CAST($5 AS INTEGER))
 					AND
@@ -93,13 +93,13 @@ func (r *productsRepo) ProductList(c *fiber.Ctx) (*entities.ProductListRes, erro
 				*
 			FROM products p
 			WHERE
-				($3 = '' OR u.gender = CAST($3 AS gender))
+				($3 = '' OR p.gender = CAST($3 AS gender))
 					AND
-				($4 = '' OR u.size = CAST($4) AS size)
+				($4 = '' OR p.size = CAST($4 AS size))
 					AND
 				($5 = '' OR p.price = CAST($5 AS INTEGER))
 					AND
-				($6 = '' OR u.style LIKE '%' || $6 || '%')
+				($6 = '' OR p.style LIKE '%' || $6 || '%')
 			ORDER BY p.id
 			OFFSET $1 LIMIT $2
 		)

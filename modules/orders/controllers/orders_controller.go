@@ -1,0 +1,57 @@
+package controllers
+
+import (
+	"github.com/FardeeUseng/backend-t-shirt/modules/entities"
+	"github.com/gofiber/fiber/v2"
+)
+
+type ordersController struct {
+	OrderUse entities.OrdersUsecase
+}
+
+func NewOrdersController(r fiber.Router, ordersUse entities.OrdersUsecase) {
+	controller := &ordersController{
+		OrderUse: ordersUse,
+	}
+	r.Post("/", controller.CreateOrder)
+}
+
+func (h *ordersController) CreateOrder(c *fiber.Ctx) error {
+	req := new(entities.CreateOrderReq)
+	if err := c.BodyParser(req); err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(&entities.Response{
+			Status:     fiber.ErrBadRequest.Message,
+			StatusCode: fiber.ErrBadRequest.Code,
+			Message:    err.Error(),
+			Result:     nil,
+		})
+	}
+
+	if len(req.ProductId) == 0 {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(&entities.Response{
+			Status:     fiber.ErrBadRequest.Message,
+			StatusCode: fiber.ErrBadRequest.Code,
+			Message:    "product id is require",
+			Result:     nil,
+		})
+	}
+
+	res, err := h.OrderUse.CreateOrder(req)
+	if err != nil {
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(&entities.Response{
+			Status:     fiber.ErrInternalServerError.Message,
+			StatusCode: fiber.ErrInternalServerError.Code,
+			Message:    err.Error(),
+			Result:     nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(&entities.Response{
+		Status:     "OK",
+		StatusCode: fiber.StatusCreated,
+		Message:    "",
+		Result: fiber.Map{
+			"data": res,
+		},
+	})
+}

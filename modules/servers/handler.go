@@ -1,6 +1,9 @@
 package servers
 
 import (
+	_ordersHttp "github.com/FardeeUseng/backend-t-shirt/modules/orders/controllers"
+	_ordersRepository "github.com/FardeeUseng/backend-t-shirt/modules/orders/repositories"
+	_ordersUsecase "github.com/FardeeUseng/backend-t-shirt/modules/orders/usecases"
 	_productsHttp "github.com/FardeeUseng/backend-t-shirt/modules/products/controllers"
 	_productsRepository "github.com/FardeeUseng/backend-t-shirt/modules/products/repositories"
 	_productsUsecase "github.com/FardeeUseng/backend-t-shirt/modules/products/usecases"
@@ -22,6 +25,11 @@ func (s *Server) MapHandler() error {
 	productsRepository := _productsRepository.NewProductsRepository(s.Db)
 	productsUsecase := _productsUsecase.NewProductsUsecase(productsRepository)
 	_productsHttp.NewProductsController(productGroup, productsUsecase)
+
+	orderGroup := productGroup.Group("/order")
+	ordersRepository := _ordersRepository.NewOrdersRepository(s.Db)
+	ordersUsecase := _ordersUsecase.NewOrdersUsecase(ordersRepository)
+	_ordersHttp.NewOrdersController(orderGroup, ordersUsecase)
 
 	s.App.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.Map{
