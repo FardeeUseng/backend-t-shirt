@@ -1,13 +1,17 @@
 package entities
 
+import "github.com/gofiber/fiber/v2"
+
 type OrdersUsecase interface {
 	CreateOrder(req *CreateOrderReq) (*CreateOrderRes, error)
 	CreateShipping(req *ShippingReq) (*ShippingRes, error)
+	OrderList(userId int, c *fiber.Ctx) (*OrderListRes, error)
 }
 
 type OrdersRepository interface {
 	CreateOrder(req *CreateOrderReq) (*CreateOrderRes, error)
 	CreateShipping(req *ShippingReq) (*ShippingRes, error)
+	OrderList(userId int, c *fiber.Ctx) (*OrderListRes, error)
 }
 
 type CreateOrderReq struct {
@@ -47,4 +51,17 @@ type ShippingRes struct {
 	ZipCode         string `json:"zip_code" db:"zip_code"`
 	CreatedAt       string `json:"created_at" db:"created_at"`
 	UpdatedDatetime string `json:"updated_datetime" db:"updated_datetime"`
+}
+
+type OrderList struct {
+	Status   string    `json:"status"`
+	UserId   int       `json:"user_id"`
+	OrderId  int       `json:"order_id"`
+	Products []Product `json:"product"`
+}
+
+type OrderListRes struct {
+	Page        int         `json:"page" db:"page"`
+	ItemPerPage int         `json:"item_per_page"`
+	Item        []OrderList `json:"item" db:"item"`
 }

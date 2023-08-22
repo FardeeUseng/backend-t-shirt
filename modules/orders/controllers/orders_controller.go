@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/FardeeUseng/backend-t-shirt/modules/entities"
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,6 +17,7 @@ func NewOrdersController(r fiber.Router, ordersUse entities.OrdersUsecase) {
 	}
 	r.Post("/", controller.CreateOrder)
 	r.Post("/shipping", controller.CreateShipping)
+	r.Get("/:id", controller.OrderList)
 }
 
 func (h *ordersController) CreateOrder(c *fiber.Ctx) error {
@@ -85,5 +88,35 @@ func (h *ordersController) CreateShipping(c *fiber.Ctx) error {
 		Result: fiber.Map{
 			"data": res,
 		},
+	})
+}
+
+func (h *ordersController) OrderList(c *fiber.Ctx) error {
+	id := c.Params("id")
+	userId, qErr := strconv.Atoi(id)
+	if qErr != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(&entities.Response{
+			Status:     fiber.ErrBadRequest.Message,
+			StatusCode: fiber.ErrBadRequest.Code,
+			Message:    qErr.Error(),
+			Result:     nil,
+		})
+	}
+
+	res, err := h.OrderUse.OrderList(userId, c)
+	if err != nil {
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(&entities.Response{
+			Status:     fiber.ErrInternalServerError.Message,
+			StatusCode: fiber.ErrInternalServerError.Code,
+			Message:    err.Error(),
+			Result:     nil,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&entities.Response{
+		Status:     "OK",
+		StatusCode: fiber.StatusOK,
+		Message:    "",
+		Result:     res,
 	})
 }

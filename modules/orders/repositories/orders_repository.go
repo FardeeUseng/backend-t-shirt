@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/FardeeUseng/backend-t-shirt/modules/entities"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -73,7 +76,7 @@ func (h *ordersRepo) CreateOrder(req *entities.CreateOrderReq) (*entities.Create
 	for pRows.Next() {
 		var product entities.Product
 
-		if err := pRows.Scan(&product.Id, &product.Gender, &product.Style, &product.Size, &product.Price, &product.Created_at, &product.Updated_at); err != nil {
+		if err := pRows.Scan(&product.Id, &product.Gender, &product.Style, &product.Size, &product.Price, &product.CreatedAt, &product.UpdatedAt); err != nil {
 			tx.Rollback()
 			log.Errorf("%v", err.Error())
 			return nil, err
@@ -122,7 +125,7 @@ func (h *ordersRepo) CreateOrder(req *entities.CreateOrderReq) (*entities.Create
 
 	for prodsRes.Next() {
 		var product entities.Product
-		if err := prodsRes.Scan(&product.Id, &product.Gender, &product.Style, &product.Size, &product.Price, &product.Created_at, &product.Updated_at); err != nil {
+		if err := prodsRes.Scan(&product.Id, &product.Gender, &product.Style, &product.Size, &product.Price, &product.CreatedAt, &product.UpdatedAt); err != nil {
 			tx.Rollback()
 			log.Errorf("%v", err.Error())
 			return nil, err
@@ -216,5 +219,138 @@ func (h *ordersRepo) CreateShipping(req *entities.ShippingReq) (*entities.Shippi
 		ZipCode:         shipping.ZipCode,
 		CreatedAt:       shipping.CreatedAt,
 		UpdatedDatetime: shipping.UpdatedDatetime,
+	}, nil
+}
+
+func (h *ordersRepo) OrderList(userId int, c *fiber.Ctx) (*entities.OrderListRes, error) {
+
+	page := 1
+	itemPerPage := 10
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	if startDate == "" || endDate == "" {
+		startDate = "2022-12-01"
+		endDate = time.Now().Format("2006-01-02")
+	}
+
+	if c.Query("page") != "" {
+		qPage, err := strconv.Atoi(c.Query("page"))
+		if err == nil {
+			page = qPage
+		}
+	}
+	if c.Query("item_per_page") != "" {
+		qItemPerPage, err := strconv.Atoi(c.Query("item_per_page"))
+		if err == nil {
+			itemPerPage = qItemPerPage
+		}
+	} else {
+		page = 1
+		itemPerPage = 100
+	}
+
+	offset := (page - 1) * itemPerPage
+
+	tx, err := h.Db.Begin()
+	if err != nil {
+		log.Errorf("%v", err.Error())
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	userQuery := `
+		SELECT
+			u.id,
+			u.role
+		FROM "users" u
+		WHERE u.role = 'admin' and u.id = $1
+	`
+
+	uRows, uErr := h.Db.Query(userQuery, userId)
+	if uErr != nil {
+		log.Errorf("Error executing query: %v", uErr)
+		return nil, uErr
+	}
+	defer uRows.Close()
+
+	var users []entities.Users
+	for uRows.Next() {
+		var user entities.Users
+		if err := uRows.Scan(&user.Id, &user.Role); err != nil {
+			tx.Rollback()
+			log.Errorf("%v", err.Error())
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if len(users) == 0 {
+		return nil, fmt.Errorf("error, you don't have permission")
+	}
+
+	orderQuery := `
+		SELECT 
+			o.status,
+			o.user_id,
+			o.id AS order_id,
+			p.*
+		FROM "orders" o
+		JOIN "order_product" op ON o.id = op.order_id
+		JOIN "products" p ON op.product_id = p.id
+		WHERE 
+			($1 = '' OR o.status = $1)
+			AND
+			(o.created_at BETWEEN COALESCE($4, '2023-08-01'::timestamp) AND COALESCE($5, NOW()))
+		OFFSET $2 LIMIT $3
+	`
+
+	oRows, oErr := h.Db.Query(orderQuery, c.Query("status"), offset, itemPerPage, startDate, endDate)
+	if oErr != nil {
+		log.Errorf("Error executing query: %v", oErr)
+		return nil, oErr
+	}
+	defer oRows.Close()
+
+	orderMap := make(map[int]entities.OrderList)
+	for oRows.Next() {
+		var status string
+		var userId, orderId int
+		var product entities.Product
+
+		if err := oRows.Scan(&status, &userId, &orderId, &product.Id, &product.Gender, &product.Style, &product.Size, &product.Price, &product.CreatedAt, &product.UpdatedAt); err != nil {
+			log.Errorf("Error scanning row: %v", err)
+			return nil, err
+		}
+
+		if existingOrder, ok := orderMap[orderId]; ok {
+			existingOrder.Products = append(existingOrder.Products, product)
+			orderMap[orderId] = existingOrder
+		} else {
+			orderMap[orderId] = entities.OrderList{
+				Status:   status,
+				UserId:   userId,
+				OrderId:  orderId,
+				Products: []entities.Product{product},
+			}
+		}
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		log.Errorf("%v", err.Error())
+		return nil, err
+	}
+
+	var orders []entities.OrderList
+	for _, order := range orderMap {
+		orders = append(orders, order)
+	}
+
+	return &entities.OrderListRes{
+		Page:        page,
+		ItemPerPage: itemPerPage,
+		Item:        orders,
 	}, nil
 }

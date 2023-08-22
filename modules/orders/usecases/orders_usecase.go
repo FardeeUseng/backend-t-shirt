@@ -1,6 +1,9 @@
 package usecases
 
-import "github.com/FardeeUseng/backend-t-shirt/modules/entities"
+import (
+	"github.com/FardeeUseng/backend-t-shirt/modules/entities"
+	"github.com/gofiber/fiber/v2"
+)
 
 type ordersUse struct {
 	OrdersRepo entities.OrdersRepository
@@ -22,6 +25,14 @@ func (u *ordersUse) CreateOrder(req *entities.CreateOrderReq) (*entities.CreateO
 
 func (u *ordersUse) CreateShipping(req *entities.ShippingReq) (*entities.ShippingRes, error) {
 	res, err := u.OrdersRepo.CreateShipping(req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (u *ordersUse) OrderList(userId int, c *fiber.Ctx) (*entities.OrderListRes, error) {
+	res, err := u.OrdersRepo.OrderList(userId, c)
 	if err != nil {
 		return nil, err
 	}

@@ -13,13 +13,13 @@ type ProductsRepository interface {
 }
 
 type Product struct {
-	Id         int    `json:"id" db:"id"`
-	Gender     string `json:"gender" db:"gender"`
-	Style      string `json:"style" db:"style"`
-	Size       string `json:"size" db:"size"`
-	Price      int    `json:"price" db:"price"`
-	Created_at string `json:"created_at" db:"created_at"`
-	Updated_at string `json:"updated_datetime" db:"updated_datetime"`
+	Id        int    `json:"id" db:"id"`
+	Gender    string `json:"gender" db:"gender"`
+	Style     string `json:"style" db:"style"`
+	Size      string `json:"size" db:"size"`
+	Price     int    `json:"price" db:"price"`
+	CreatedAt string `json:"created_at" db:"created_at"`
+	UpdatedAt string `json:"updated_datetime" db:"updated_datetime"`
 }
 
 type CreateProductReq struct {
